@@ -20,6 +20,7 @@ if ($step === 'submit' && $_SERVER["REQUEST_METHOD"] == "POST" && !$cartIsEmpty)
     $order_date = date('Y-m-d');
     $delivery_date = date('Y-m-d', strtotime($order_date . ' +6 days'));
 
+    // Calculate total and prepare products array
     foreach ($_SESSION['cart'] as $id => $qty) {
         $res = $conn->query("SELECT * FROM products WHERE id=$id");
         if ($row = $res->fetch_assoc()) {
@@ -31,23 +32,50 @@ if ($step === 'submit' && $_SERVER["REQUEST_METHOD"] == "POST" && !$cartIsEmpty)
                 'qty' => $qty,
                 'subtotal' => $subtotal
             ];
-            // Save order to DB
-            $conn->query("INSERT INTO orders (customer_name, customer_email, product_id, quantity, total_price, payment_method, address, phone, order_date, delivery_date) VALUES ('$customer_name', '$customer_email', $id, $qty, $subtotal, '$payment', '$customer_address', '$customer_phone', '$order_date', '$delivery_date')");
         }
     }
-    $invoice = [
-        'customer_name' => $customer_name,
-        'customer_email' => $customer_email,
-        'customer_address' => $customer_address,
-        'customer_phone' => $customer_phone,
-        'payment' => $payment,
-        'products' => $products,
-        'total' => $total,
-        'order_date' => $order_date,
-        'delivery_date' => $delivery_date
-    ];
-    $_SESSION["cart"] = [];
-    $orderPlaced = true;
+
+    // Handle different payment methods
+    if ($payment === 'COD') {
+        // Cash on Delivery - Process order immediately
+        foreach ($_SESSION['cart'] as $id => $qty) {
+            $res = $conn->query("SELECT * FROM products WHERE id=$id");
+            if ($row = $res->fetch_assoc()) {
+                $subtotal = $row['price'] * $qty;
+                $conn->query("INSERT INTO orders (customer_name, customer_email, product_id, quantity, total_price, payment_method, address, phone, order_date, delivery_date) VALUES ('$customer_name', '$customer_email', $id, $qty, $subtotal, '$payment', '$customer_address', '$customer_phone', '$order_date', '$delivery_date')");
+            }
+        }
+        
+        $invoice = [
+            'customer_name' => $customer_name,
+            'customer_email' => $customer_email,
+            'customer_address' => $customer_address,
+            'customer_phone' => $customer_phone,
+            'payment' => $payment,
+            'products' => $products,
+            'total' => $total,
+            'order_date' => $order_date,
+            'delivery_date' => $delivery_date
+        ];
+        $_SESSION["cart"] = [];
+        $orderPlaced = true;
+    } else {
+        // Online Payment - Redirect to payment gateway
+        $_SESSION['pending_order'] = [
+            'customer_name' => $customer_name,
+            'customer_email' => $customer_email,
+            'customer_address' => $customer_address,
+            'customer_phone' => $customer_phone,
+            'payment' => $payment,
+            'products' => $products,
+            'total' => $total,
+            'order_date' => $order_date,
+            'delivery_date' => $delivery_date,
+            'cart' => $_SESSION['cart']
+        ];
+        header('Location: payment_gateway.php');
+        exit();
+    }
 }
 
 include 'header.php';
@@ -322,7 +350,18 @@ body, .auth-page {
         </div>
         <a href="products.php" class="invoice-btn"><i class="fas fa-arrow-left"></i> Go to Products</a>
     </div>
-<?php elseif ($orderPlaced): ?>
+<?php elseif ($orderPlaced || (isset($_GET['step']) && $_GET['step'] === 'submit' && isset($_GET['payment']) && $_GET['payment'] === 'online')): ?>
+    <?php
+    // Handle online payment success
+    if (isset($_GET['payment']) && $_GET['payment'] === 'online') {
+        $orderPlaced = true;
+        // Get order data from session (this would be set by payment gateway)
+        if (isset($_SESSION['last_order'])) {
+            $invoice = $_SESSION['last_order'];
+            unset($_SESSION['last_order']);
+        }
+    }
+    ?>
     <!-- Order Success Sound -->
     <audio id="orderSuccessSound" preload="auto">
         <source src="https://www.soundjay.com/misc/sounds/fail-buzzer-02.wav" type="audio/wav">
