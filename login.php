@@ -11,8 +11,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $res = $conn->query("SELECT * FROM users WHERE email='$email' AND password='$pass'");
     if ($res->num_rows > 0) {
         $_SESSION["user_email"] = $email;
+        // Set user_id in session for login check
+        $row = $res->fetch_assoc();
+        $_SESSION["user_id"] = $row["id"];
         $success = "Login successful! Redirecting...";
-        header("refresh:2;url=products.php");
+        if (isset($_GET['redirect']) && $_GET['redirect'] === 'checkout') {
+            header("Location: checkout.php?from_cart=true");
+            exit;
+        } else {
+            header("Location: products.php");
+            exit;
+        }
     } else {
         $error = "Invalid email or password!";
     }
@@ -66,7 +75,7 @@ include 'header.php';
             </form>
 
             <div class="auth-footer">
-                <p>Don't have an account? <a href="signup.php">Sign up here</a></p>
+                <p>Don't have an account? <a href="signup.php<?php echo isset($_GET['redirect']) ? '?redirect=' . urlencode($_GET['redirect']) : ''; ?>">Sign up here</a></p>
                 <a href="index.php" class="back-home">
                     <i class="fas fa-home"></i> Back to Home
                 </a>

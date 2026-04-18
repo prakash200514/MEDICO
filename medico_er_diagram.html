@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title >Medico Medicine Store - Design Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: black;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            color: black;
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 2rem;
+        }
+        
+        .section {
+            margin-bottom: 3rem;
+            page-break-inside: avoid;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+        
+        .section h3 {
+            color: #764ba2;
+            font-size: 1.4rem;
+            margin: 1.5rem 0 1rem 0;
+        }
+        
+        .er-diagram {
+            background: #f8f9fa;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 2rem;
+            margin: 1rem 0;
+            text-align: center;
+        }
+        
+        .table-box {
+            display: inline-block;
+            background: white;
+            border: 2px solid #333;
+            border-radius: 8px;
+            margin: 1rem;
+            padding: 1rem;
+            min-width: 250px;
+            vertical-align: top;
+        }
+        
+        .table-name {
+            background: #667eea;
+            color: rgb(19, 0, 0);
+            font-weight: bold;
+            padding: 0.5rem;
+            margin: -1rem -1rem 1rem -1rem;
+            border-radius: 6px 6px 0 0;
+            text-align: center;
+        }
+        
+        .field {
+            text-align: left;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .field:last-child {
+            border-bottom: none;
+        }
+        
+        .pk {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        
+        .fk {
+            font-style: italic;
+            color: #3498db;
+        }
+        
+        .relationship {
+            margin: 2rem 0;
+            padding: 1rem;
+            background: #e8f4fd;
+            border-left: 4px solid #3498db;
+            border-radius: 5px;
+        }
+        
+        .code-block {
+            background: #2c3e50;
+            color: black;
+            padding: 1rem;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .feature-list li:before {
+            content: "✓";
+            color: #27ae60;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+        
+        .workflow {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        
+        .workflow-step {
+            display: flex;
+            align-items: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 1rem;
+        }
+        
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .tech-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+        
+        .tech-item h4 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+        
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .container {
+                box-shadow: none;
+            }
+            
+            .section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Medico Medicine Store</h1>
+            <p> System Design Documentation</p>
+        </div>
+        
+        <div class="content">
+            <!-- System Overview -->
+            <div class="section">
+                <h2>1. System Overview</h2>
+                <p>Medico is a comprehensive online medicine store that allows customers to browse, purchase, and order medicines with prescription support. The system includes user authentication, product management, shopping cart functionality, and prescription upload capabilities.</p>
+                
+                <h3>Key Features</h3>
+                <ul class="feature-list">
+                    <li>User registration and authentication system</li>
+                    <li>Product catalog with multiple categories (Tablets, Syrups, Supplements, Baby Products, Veterinary, Injections)</li>
+                    <li>Shopping cart functionality with AJAX support</li>
+                    <li>Prescription upload and management</li>
+                    <li>Order processing with multiple payment methods</li>
+                    <li>Admin panel for product and order management</li>
+                    <li>Responsive design for mobile and desktop</li>
+                    <li>Stock management system</li>
+                    <li>Invoice generation and order tracking</li>
+                </ul>
+            </div>
+            
+            <!-- ER Diagram -->
+            <div class="section">
+                <h2>2. Entity Relationship Diagram</h2>
+                <div class="er-diagram">
+                    <div class="table-box">
+                        <div class="table-name">USERS</div>
+                        <div class="field pk">id (PK)</div>
+                        <div class="field">name</div>
+                        <div class="field">email</div>
+                        <div class="field">password</div>
+                    </div>
+                    
+                    <div class="table-box">
+                        <div class="table-name">PRODUCTS</div>
+                        <div class="field pk">id (PK)</div>
+                        <div class="field">name</div>
+                        <div class="field">price</div>
+                        <div class="field">category</div>
+                        <div class="field">stock</div>
+                        <div class="field">image</div>
+                    </div>
+                    
+                    <div class="table-box">
+                        <div class="table-name">PRESCRIPTIONS</div>
+                        <div class="field pk">id (PK)</div>
+                        <div class="field fk">user_email (FK)</div>
+                        <div class="field">file_path</div>
+                        <div class="field">uploaded_at</div>
+                    </div>
+                    
+                    <div class="table-box">
+                        <div class="table-name">ORDERS</div>
+                        <div class="field pk">id (PK)</div>
+                        <div class="field">customer_name</div>
+                        <div class="field">customer_email</div>
+                        <div class="field fk">product_id (FK)</div>
+                        <div class="field">quantity</div>
+                        <div class="field">total_price</div>
+                        <div class="field">payment_method</div>
+                        <div class="field">address</div>
+                        <div class="field">phone</div>
+                        <div class="field">order_date</div>
+                        <div class="field">delivery_date</div>
+                        <div class="field">prescription_path</div>
+                    </div>
+                </div>
+                
+                <div class="relationship">
+                    <h4>Relationships:</h4>
+                    <ul>
+                        <li><strong>USERS → PRESCRIPTIONS:</strong> One-to-Many (A user can have multiple prescriptions)</li>
+                        <li><strong>USERS → ORDERS:</strong> One-to-Many (A user can have multiple orders)</li>
+                        <li><strong>PRODUCTS → ORDERS:</strong> One-to-Many (A product can be in multiple orders)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Database Schema -->
+            <div class="section">
+                <h2>3. Database Schema Details</h2>
+                
+                <h3>USERS Table</h3>
+                <div class="code-block">
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(50),
+  email VARCHAR(100),
+  password VARCHAR(100)
+);
+                </div>
+                <p><strong>Purpose:</strong> Stores user account information for authentication and order management.</p>
+                
+                <h3>PRODUCTS Table</h3>
+                <div class="code-block">
+CREATE TABLE products (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100),
+  price DECIMAL(10,2),
+  category VARCHAR(50),
+  stock INT,
+  image VARCHAR(100)
+);
+                </div>
+                <p><strong>Purpose:</strong> Stores product information including pricing, stock levels, and images.</p>
+                
+                <h3>PRESCRIPTIONS Table</h3>
+                <div class="code-block">
+CREATE TABLE prescriptions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_email VARCHAR(100),
+  file_path VARCHAR(255),
+  uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+                </div>
+                <p><strong>Purpose:</strong> Stores prescription file information for order validation.</p>
+                
+                <h3>ORDERS Table</h3>
+                <div class="code-block">
+CREATE TABLE orders (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  customer_name VARCHAR(100),
+  customer_email VARCHAR(100),
+  product_id INT,
+  quantity INT,
+  total_price DECIMAL(10,2),
+  payment_method VARCHAR(50),
+  address VARCHAR(255),
+  phone VARCHAR(20),
+  order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  delivery_date DATE,
+  prescription_path VARCHAR(255)
+);
+                </div>
+                <p><strong>Purpose:</strong> Stores complete order information including customer details, products, and prescription.</p>
+            </div>
+            
+            <!-- System Architecture -->
+            <div class="section">
+                <h2>4. System Architecture</h2>
+                
+                <h3>Technology Stack</h3>
+                <div class="tech-stack">
+                    <div class="tech-item">
+                        <h4>Frontend</h4>
+                        <p>HTML5, CSS3, JavaScript</p>
+                        <p>Font Awesome Icons</p>
+                        <p>Responsive Design</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>Backend</h4>
+                        <p>PHP 7.4+</p>
+                        <p>MySQL Database</p>
+                        <p>Session Management</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>Server</h4>
+                        <p>XAMPP (Apache)</p>
+                        <p>File Upload System</p>
+                        <p>AJAX Integration</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>Security</h4>
+                        <p>Password Hashing (MD5)</p>
+                        <p>Session Protection</p>
+                        <p>File Validation</p>
+                    </div>
+                </div>
+                
+                <h3>File Structure</h3>
+                <div class="code-block">
+medicine_store/
+├── index.php                 # Home page
+├── products.php             # Product catalog
+├── baby_products.php        # Baby products page
+├── veterinary.php           # Veterinary products
+├── injections.php           # Injection products
+├── cart.php                 # Shopping cart
+├── checkout.php             # Order checkout
+├── login.php                # User login
+├── signup.php               # User registration
+├── prescription_upload.php  # Prescription management
+├── admin_dashboard.php      # Admin panel
+├── add_to_cart_ajax.php     # AJAX cart operations
+├── db.php                   # Database connection
+├── header.php               # Common header
+├── footer.php               # Common footer
+├── style.css                # Main stylesheet
+├── responsive.css           # Responsive styles
+├── img/                     # Product images
+├── uploads/prescriptions/   # Prescription files
+└── database.sql             # Database schema
+                </div>
+            </div>
+            
+            <!-- User Workflow -->
+            <div class="section">
+                <h2>5. User Workflow</h2>
+                
+                <div class="workflow">
+                    <h3>Customer Order Process</h3>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">1</div>
+                        <div>
+                            <strong>Browse Products</strong><br>
+                            Customer navigates through different product categories (Tablets, Syrups, Baby Products, etc.)
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">2</div>
+                        <div>
+                            <strong>Add to Cart</strong><br>
+                            Customer adds desired products to cart using AJAX functionality
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">3</div>
+                        <div>
+                            <strong>Review Cart</strong><br>
+                            Customer reviews cart contents and proceeds to checkout
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">4</div>
+                        <div>
+                            <strong>Authentication</strong><br>
+                            If not logged in, customer is redirected to signup/login with checkout redirect
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">5</div>
+                        <div>
+                            <strong>Checkout Form</strong><br>
+                            Customer fills delivery details, payment method, and uploads prescription (if required)
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">6</div>
+                        <div>
+                            <strong>Order Processing</strong><br>
+                            System validates stock, processes payment, and generates order
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">7</div>
+                        <div>
+                            <strong>Order Confirmation</strong><br>
+                            Customer receives order confirmation with invoice and delivery details
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Security Features -->
+            <div class="section">
+                <h2>6. Security Features</h2>
+                
+                <h3>Authentication & Authorization</h3>
+                <ul class="feature-list">
+                    <li>User registration with email validation</li>
+                    <li>Password hashing using MD5 algorithm</li>
+                    <li>Session-based authentication</li>
+                    <li>Automatic logout functionality</li>
+                    <li>Admin panel access control</li>
+                </ul>
+                
+                <h3>Data Protection</h3>
+                <ul class="feature-list">
+                    <li>SQL injection prevention through prepared statements</li>
+                    <li>File upload validation (type and size restrictions)</li>
+                    <li>XSS protection through output escaping</li>
+                    <li>CSRF protection through session validation</li>
+                    <li>Secure file storage with unique naming</li>
+                </ul>
+                
+                <h3>Prescription Security</h3>
+                <ul class="feature-list">
+                    <li>Automatic cleanup of old prescription files</li>
+                    <li>File type validation (JPG, PNG, PDF only)</li>
+                    <li>File size limits (5MB maximum)</li>
+                    <li>Unique file naming to prevent conflicts</li>
+                    <li>Prescription files linked to specific orders only</li>
+                </ul>
+            </div>
+            
+            <!-- Admin Features -->
+            <div class="section">
+                <h2>7. Admin Panel Features</h2>
+                
+                <h3>Product Management</h3>
+                <ul class="feature-list">
+                    <li>Add new products with images</li>
+                    <li>Edit existing product details</li>
+                    <li>Manage product categories</li>
+                    <li>Update stock levels</li>
+                    <li>Set product pricing</li>
+                </ul>
+                
+                <h3>Order Management</h3>
+                <ul class="feature-list">
+                    <li>View all customer orders</li>
+                    <li>Track order status</li>
+                    <li>Manage delivery dates</li>
+                    <li>Access prescription files</li>
+                    <li>Generate order reports</li>
+                </ul>
+                
+                <h3>User Management</h3>
+                <ul class="feature-list">
+                    <li>View registered users</li>
+                    <li>Monitor user activity</li>
+                    <li>Manage user accounts</li>
+                </ul>
+            </div>
+            
+            <!-- Technical Specifications -->
+            <div class="section">
+                <h2>8. Technical Specifications</h2>
+                
+                <h3>System Requirements</h3>
+                <ul class="feature-list">
+                    <li>PHP 7.4 or higher</li>
+                    <li>MySQL 5.7 or higher</li>
+                    <li>Apache Web Server</li>
+                    <li>Minimum 512MB RAM</li>
+                    <li>1GB available disk space</li>
+                    <li>File upload support enabled</li>
+                </ul>
+                
+                <h3>Browser Compatibility</h3>
+                <ul class="feature-list">
+                    <li>Google Chrome (latest)</li>
+                    <li>Mozilla Firefox (latest)</li>
+                    <li>Safari (latest)</li>
+                    <li>Microsoft Edge (latest)</li>
+                    <li>Mobile browsers (iOS Safari, Chrome Mobile)</li>
+                </ul>
+                
+                <h3>Performance Features</h3>
+                <ul class="feature-list">
+                    <li>AJAX cart operations for smooth UX</li>
+                    <li>Optimized database queries</li>
+                    <li>Image compression and optimization</li>
+                    <li>Responsive design for all devices</li>
+                    <li>Fast page loading with minimal dependencies</li>
+                </ul>
+            </div>
+            
+            <!-- Future Enhancements -->
+            <div class="section">
+                <h2>9. Future Enhancements</h2>
+                
+                <h3>Planned Features</h3>
+                <ul class="feature-list">
+                    <li>Email notifications for order status</li>
+                    <li>Order tracking system</li>
+                    <li>Customer reviews and ratings</li>
+                    <li>Wishlist functionality</li>
+                    <li>Advanced search and filtering</li>
+                    <li>Payment gateway integration (Razorpay, Paytm)</li>
+                    <li>Mobile app development</li>
+                    <li>Inventory management system</li>
+                    <li>Sales analytics and reporting</li>
+                    <li>Multi-language support</li>
+                </ul>
+                
+                <h3>Technical Improvements</h3>
+                <ul class="feature-list">
+                    <li>Upgrade to PHP 8.x</li>
+                    <li>Implement PDO for database operations</li>
+                    <li>Add API endpoints for mobile app</li>
+                    <li>Implement caching mechanisms</li>
+                    <li>Add automated testing</li>
+                    <li>Implement CDN for static assets</li>
+                </ul>
+            </div>
+            
+            <!-- Conclusion -->
+            <div class="section">
+                <h2>10. Conclusion</h2>
+                <p>The Medico Medicine Store is a comprehensive e-commerce solution designed specifically for pharmaceutical retail. The system provides a secure, user-friendly platform for customers to purchase medicines while ensuring compliance with prescription requirements.</p>
+                
+                <p>The modular architecture allows for easy maintenance and future enhancements, while the responsive design ensures optimal user experience across all devices. The admin panel provides complete control over products, orders, and user management.</p>
+                
+                <p>With its robust security features, efficient order processing, and prescription management capabilities, Medico serves as a complete solution for online medicine retail operations.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

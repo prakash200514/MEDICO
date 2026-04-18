@@ -1,27 +1,31 @@
 <?php
 include 'db.php';
 
-// Clear existing products
-$conn->query("DELETE FROM products");
+echo "<h2>Updating Database Structure</h2>";
 
-// Insert sample products with correct image paths
-$sample_products = [
-    ['Paracetamol 500mg', 25.00, 'Tablets', 100, 'v3.jpg'],
-    ['Cough Syrup Corex', 120.00, 'Syrups', 50, 'corex.jpg'],
-    ['Vitamin D3 Capsules', 150.00, 'Supplements', 75, 'v3.jpg'],
-    ['Amoxicillin 500mg', 45.00, 'Tablets', 60, 'corex.jpg'],
-    ['Multivitamin Syrup', 180.00, 'Syrups', 40, 'v3.jpg'],
-    ['Iron Supplements', 200.00, 'Supplements', 30, 'corex.jpg']
+// Check if columns exist and add them if they don't
+$columns_to_add = [
+    'address' => 'VARCHAR(255) DEFAULT NULL',
+    'phone' => 'VARCHAR(20) DEFAULT NULL', 
+    'delivery_date' => 'DATE DEFAULT NULL'
 ];
 
-$sql = "INSERT INTO products (name, price, category, stock, image) VALUES (?, ?, ?, ?, ?)";
-$stmt = $conn->prepare($sql);
-
-foreach ($sample_products as $product) {
-    $stmt->bind_param("sdss", $product[0], $product[1], $product[2], $product[3], $product[4]);
-    $stmt->execute();
+foreach ($columns_to_add as $column => $definition) {
+    // Check if column exists
+    $result = $conn->query("SHOW COLUMNS FROM orders LIKE '$column'");
+    if ($result->num_rows == 0) {
+        // Column doesn't exist, add it
+        $sql = "ALTER TABLE orders ADD COLUMN $column $definition";
+        if ($conn->query($sql)) {
+            echo "<p>✅ Added column: $column</p>";
+        } else {
+            echo "<p>❌ Error adding column $column: " . $conn->error . "</p>";
+        }
+    } else {
+        echo "<p>✅ Column $column already exists</p>";
+    }
 }
 
-echo "Database updated successfully with sample products!";
-echo "<br><a href='admin_login.php'>Go to Admin Login</a>";
+echo "<h3>Database structure updated successfully!</h3>";
+echo "<p><a href='checkout.php'>Go to Checkout</a></p>";
 ?> 

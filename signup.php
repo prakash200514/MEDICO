@@ -26,6 +26,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } else {
             $pass = md5($password);
             $conn->query("INSERT INTO users (name, email, password) VALUES ('$name', '$email', '$pass')");
+            // Redirect to login with redirect param if present
+            if (isset($_GET['redirect'])) {
+                $redirect = urlencode($_GET['redirect']);
+                header("Location: login.php?redirect=$redirect");
+                exit;
+            }
             $success = "Registration successful! You can now login.";
         }
     }
@@ -55,7 +61,7 @@ include 'header.php';
                 <div class="alert alert-success">
                     <i class="fas fa-check-circle"></i>
                     <?php echo $success; ?>
-                    <br><a href="login.php" style="color: #2f855a; text-decoration: underline;">Click here to login</a>
+                    <br><a href="login.php<?php echo isset($_GET['redirect']) ? '?redirect=' . urlencode($_GET['redirect']) : ''; ?>" style="color: #2f855a; text-decoration: underline;">Click here to login</a>
                 </div>
             <?php endif; ?>
 
@@ -95,7 +101,7 @@ include 'header.php';
             </form>
 
             <div class="auth-footer">
-                <p>Already have an account? <a href="login.php">Login here</a></p>
+                <p>Already have an account? <a href="login.php<?php echo isset($_GET['redirect']) ? '?redirect=' . urlencode($_GET['redirect']) : ''; ?>">Login here</a></p>
                 <a href="index.php" class="back-home">
                     <i class="fas fa-home"></i> Back to Home
                 </a>

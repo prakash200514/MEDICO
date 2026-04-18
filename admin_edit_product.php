@@ -31,8 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $price = $_POST['price'];
     $category = $_POST['category'];
     $stock = $_POST['stock'];
+    $description = isset($_POST['description']) ? $_POST['description'] : '';
     
-    // Handle image upload
+    // Handle first image upload
     $image_name = $product['image']; // Keep existing image by default
     if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
         $allowed = ['jpg', 'jpeg', 'png', 'gif'];
@@ -40,7 +41,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
         
         if (in_array($ext, $allowed)) {
-            $image_name = time() . '_' . $filename;
+            // Sanitize filename to prevent issues
+            $safe_filename = preg_replace('/[^a-zA-Z0-9._-]/', '_', $filename);
+            $image_name = time() . '_' . $safe_filename;
+            
+            // Ensure filename is not too long
+            if (strlen($image_name) > 200) {
+                $image_name = time() . '_' . substr($safe_filename, 0, 50) . '.' . $ext;
+            }
+            
             $upload_path = 'img/' . $image_name;
             
             if (move_uploaded_file($_FILES['image']['tmp_name'], $upload_path)) {
@@ -49,17 +58,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     unlink('img/' . $product['image']);
                 }
             } else {
-                $message = "Error uploading image!";
+                $message = "Error uploading first image!";
             }
         } else {
             $message = "Invalid image format! Only JPG, JPEG, PNG, GIF allowed.";
         }
     }
     
+
+    
     if (empty($message)) {
-        $sql = "UPDATE products SET name=?, price=?, category=?, stock=?, image=? WHERE id=?";
+        // Check if description column exists
+        $column_check = $conn->query("SHOW COLUMNS FROM products LIKE 'description'");
+        $description_exists = $column_check && $column_check->num_rows > 0;
+        
+        if ($description_exists) {
+        $sql = "UPDATE products SET name=?, price=?, category=?, stock=?, image=?, description=? WHERE id=?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sdssi", $name, $price, $category, $stock, $image_name, $id);
+        $stmt->bind_param("sdssssi", $name, $price, $category, $stock, $image_name, $description, $id);
+        } else {
+            $sql = "UPDATE products SET name=?, price=?, category=?, stock=?, image=? WHERE id=?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("sdsssi", $name, $price, $category, $stock, $image_name, $id);
+        }
         
         if ($stmt->execute()) {
             $message = "Product updated successfully!";
@@ -69,8 +90,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $product['category'] = $category;
             $product['stock'] = $stock;
             $product['image'] = $image_name;
+            if ($description_exists) {
+            $product['description'] = $description;
+            }
         } else {
-            $message = "Error updating product!";
+            $message = "Error updating product: " . $stmt->error;
         }
     }
 }
@@ -217,8 +241,35 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <option value="Supplements" <?php echo ($product['category'] == 'Supplements') ? 'selected' : ''; ?>>Supplements</option>
                         <option value="Creams" <?php echo ($product['category'] == 'Creams') ? 'selected' : ''; ?>>Creams</option>
                         <option value="Drops" <?php echo ($product['category'] == 'Drops') ? 'selected' : ''; ?>>Drops</option>
+                         <option value="Injections" <?php echo ($product['category'] == 'Injection') ? 'selected' : ''; ?>>injection</option>
+                        <option value="Baby Products" <?php echo ($product['category'] == 'Baby Products') ? 'selected' : ''; ?>>Baby Products</option>
                     </select>
                 </div>
+
+
+
+                <?php 
+                // Check if description column exists
+                $column_check = $conn->query("SHOW COLUMNS FROM products LIKE 'description'");
+                $description_exists = $column_check && $column_check->num_rows > 0;
+                ?>
+                
+                <?php if ($description_exists): ?>
+                <div class="form-group">
+                    <label for="description">Product Description</label>
+                    <textarea id="description" name="description" placeholder="Enter product description..."><?php echo htmlspecialchars($product['description'] ?? ''); ?></textarea>
+                    <small style="color: #666;">Describe the product features, benefits, and usage instructions</small>
+                </div>
+                <?php else: ?>
+                <div class="form-group">
+                    <label for="description">Product Description</label>
+                    <textarea id="description" name="description" placeholder="Enter product description..."><?php echo htmlspecialchars($product['description'] ?? ''); ?></textarea>
+                    <small style="color: #666;">Describe the product features, benefits, and usage instructions</small>
+                    <div style="background: #fff3cd; padding: 10px; border-radius: 5px; margin-top: 5px; color: #856404;">
+                        <i class="fas fa-info-circle"></i> <strong>Note:</strong> Description field will be saved after running the database setup script.
+                    </div>
+                </div>
+                <?php endif; ?>
 
                 <div class="form-group">
                     <label for="stock">Stock Quantity *</label>
@@ -226,20 +277,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
 
                 <div class="form-group">
-                    <label for="image">Product Image</label>
+                    <label for="image">Primary Product Image</label>
                     <?php if ($product['image']): ?>
                         <div class="current-image">
-                            <strong>Current Image:</strong><br>
-                            <img src="img/<?php echo $product['image']; ?>" alt="Current product image">
+                            <strong>Current Primary Image:</strong><br>
+                            <img src="img/<?php echo $product['image']; ?>" alt="Current primary image" style="max-width: 200px; height: auto;">
                         </div>
                     <?php endif; ?>
                     <input type="file" id="image" name="image" accept="image/*">
                     <small style="color: #666;">Leave empty to keep current image. Supported formats: JPG, JPEG, PNG, GIF. Max size: 5MB</small>
                 </div>
 
+
+
                 <button type="submit" class="submit-btn">Update Product</button>
             </form>
         </div>
     </div>
+
+
 </body>
 </html> 

@@ -2,12 +2,70 @@
 session_start();
 include 'db.php';
 
+// Check if user is logged in; if not, redirect to signup with redirect param
+if (!isset($_SESSION['user_id'])) {
+    header('Location: signup.php?redirect=checkout');
+    exit;
+}
+
+// Check if orders table has required columns
+$required_columns = ['customer_name', 'customer_email', 'product_id', 'quantity', 'total_price', 'payment_method', 'address', 'phone', 'order_date', 'delivery_date', 'prescription_path'];
+$missing_columns = [];
+
+foreach ($required_columns as $column) {
+    $result = $conn->query("SHOW COLUMNS FROM orders LIKE '$column'");
+    if ($result->num_rows == 0) {
+        $missing_columns[] = $column;
+    }
+}
+
+if (!empty($missing_columns)) {
+    echo "<div style='text-align: center; padding: 50px; font-family: Arial, sans-serif;'>";
+    echo "<h2>Database Configuration Required</h2>";
+    echo "<p>The database needs to be updated. Please run the database fix script first.</p>";
+    echo "<p><a href='fix_database_complete.php' style='background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Fix Database</a></p>";
+    echo "</div>";
+    exit;
+}
+
 $cartIsEmpty = empty($_SESSION['cart']) || count($_SESSION['cart']) === 0;
 
 $orderPlaced = false;
 $invoice = [];
 
 $step = isset($_GET['step']) ? $_GET['step'] : 'cart';
+
+// Check if user came from cart page (proper flow)
+$fromCart = isset($_GET['from_cart']) && $_GET['from_cart'] === 'true';
+
+// Clear existing prescriptions for this user (only allow new uploads)
+if (isset($_SESSION['user_email'])) {
+    $user_email = $_SESSION['user_email'];
+    
+    // Get existing prescription files to delete them
+    $prescriptions_result = $conn->query("SELECT file_path FROM prescriptions WHERE user_email = '$user_email'");
+    while ($row = $prescriptions_result->fetch_assoc()) {
+        $file_path = $row['file_path'];
+        if (file_exists($file_path)) {
+            unlink($file_path); // Delete the physical file
+        }
+    }
+    
+    // Delete all prescription records for this user
+    $conn->query("DELETE FROM prescriptions WHERE user_email = '$user_email'");
+}
+
+// If user directly accesses checkout without going through cart, redirect to cart
+if (!$fromCart && $step === 'cart' && !$cartIsEmpty) {
+    header("Location: cart.php");
+    exit;
+}
+
+// If user directly accesses checkout form without going through cart, redirect to cart
+if (!$fromCart && $step === 'form' && !$cartIsEmpty) {
+    header("Location: cart.php");
+    exit;
+}
 
 if ($step === 'submit' && $_SERVER["REQUEST_METHOD"] == "POST" && !$cartIsEmpty) {
     $customer_name = $_POST['customer_name'];
@@ -19,6 +77,86 @@ if ($step === 'submit' && $_SERVER["REQUEST_METHOD"] == "POST" && !$cartIsEmpty)
     $products = [];
     $order_date = date('Y-m-d');
     $delivery_date = date('Y-m-d', strtotime($order_date . ' +6 days'));
+    
+    // Handle new prescription upload
+    $new_prescription_path = null;
+    if (isset($_FILES['new_prescription']) && $_FILES['new_prescription']['error'] == 0) {
+        $file = $_FILES['new_prescription'];
+        $filename = $file['name'];
+        $filetype = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        $filesize = $file['size'];
+        
+        // Validate file type
+        $allowed_types = ['jpg', 'jpeg', 'png', 'pdf'];
+        if (in_array($filetype, $allowed_types) && $filesize <= 5 * 1024 * 1024) {
+            // Create uploads directory if it doesn't exist
+            $upload_dir = "uploads/prescriptions/";
+            if (!file_exists($upload_dir)) {
+                mkdir($upload_dir, 0777, true);
+            }
+            
+            // Generate unique filename
+            $unique_filename = time() . '_' . $customer_email . '_' . $filename;
+            $filepath = $upload_dir . $unique_filename;
+            
+            if (move_uploaded_file($file['tmp_name'], $filepath)) {
+                // Save to database
+                $conn->query("INSERT INTO prescriptions (user_email, file_path) VALUES ('$customer_email', '$filepath')");
+                $new_prescription_path = $filepath;
+                // If image, attempt to create a thumbnail to speed up previews
+                $image_ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                if (in_array($image_ext, ['jpg','jpeg','png'])) {
+                    // Create thumbnail file path
+                    $thumb_path = $upload_dir . 'thumb_' . $unique_filename;
+                    // Use GD if available
+                    if (function_exists('imagecreatefromjpeg') || function_exists('imagecreatefrompng')) {
+                        try {
+                            if (in_array($image_ext, ['jpg','jpeg'])) {
+                                $src_img = imagecreatefromjpeg($filepath);
+                            } else {
+                                $src_img = imagecreatefrompng($filepath);
+                            }
+
+                            if ($src_img) {
+                                $src_w = imagesx($src_img);
+                                $src_h = imagesy($src_img);
+                                $max = 200; // max thumbnail dimension
+                                if ($src_w > $src_h) {
+                                    $thumb_w = $max;
+                                    $thumb_h = intval($src_h * ($max / $src_w));
+                                } else {
+                                    $thumb_h = $max;
+                                    $thumb_w = intval($src_w * ($max / $src_h));
+                                }
+
+                                $thumb_img = imagecreatetruecolor($thumb_w, $thumb_h);
+                                // Preserve PNG transparency
+                                if ($image_ext === 'png') {
+                                    imagealphablending($thumb_img, false);
+                                    imagesavealpha($thumb_img, true);
+                                    $transparent = imagecolorallocatealpha($thumb_img, 255, 255, 255, 127);
+                                    imagefilledrectangle($thumb_img, 0, 0, $thumb_w, $thumb_h, $transparent);
+                                }
+
+                                imagecopyresampled($thumb_img, $src_img, 0, 0, 0, 0, $thumb_w, $thumb_h, $src_w, $src_h);
+
+                                if ($image_ext === 'png') {
+                                    imagepng($thumb_img, $thumb_path, 6);
+                                } else {
+                                    imagejpeg($thumb_img, $thumb_path, 80);
+                                }
+
+                                imagedestroy($thumb_img);
+                                imagedestroy($src_img);
+                            }
+                        } catch (Exception $e) {
+                            // silently ignore thumbnail creation errors
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     // Calculate total and prepare products array
     foreach ($_SESSION['cart'] as $id => $qty) {
@@ -35,14 +173,39 @@ if ($step === 'submit' && $_SERVER["REQUEST_METHOD"] == "POST" && !$cartIsEmpty)
         }
     }
 
-    // Handle different payment methods
-    if ($payment === 'COD') {
-        // Cash on Delivery - Process order immediately
+    // Check stock availability and decrease stock quantities
+    $stock_errors = [];
+    foreach ($_SESSION['cart'] as $id => $qty) {
+        $res = $conn->query("SELECT * FROM products WHERE id=$id");
+        if ($row = $res->fetch_assoc()) {
+            if ($row['stock'] < $qty) {
+                $stock_errors[] = "Insufficient stock for {$row['name']}. Available: {$row['stock']}, Requested: $qty";
+            }
+        }
+    }
+    
+    // If there are stock errors, don't process the order
+    if (!empty($stock_errors)) {
+        $error = implode("<br>", $stock_errors);
+    } else {
+        // Process order for all payment methods
         foreach ($_SESSION['cart'] as $id => $qty) {
             $res = $conn->query("SELECT * FROM products WHERE id=$id");
             if ($row = $res->fetch_assoc()) {
                 $subtotal = $row['price'] * $qty;
-                $conn->query("INSERT INTO orders (customer_name, customer_email, product_id, quantity, total_price, payment_method, address, phone, order_date, delivery_date) VALUES ('$customer_name', '$customer_email', $id, $qty, $subtotal, '$payment', '$customer_address', '$customer_phone', '$order_date', '$delivery_date')");
+                
+                // Decrease stock quantity
+                $new_stock = $row['stock'] - $qty;
+                $conn->query("UPDATE products SET stock = $new_stock WHERE id = $id");
+                
+                // Determine prescription path (only new uploads)
+                $prescription_path = $new_prescription_path;
+                
+                $insert_sql = "INSERT INTO orders (customer_name, customer_email, product_id, quantity, total_price, payment_method, address, phone, order_date, delivery_date, prescription_path) VALUES ('$customer_name', '$customer_email', $id, $qty, $subtotal, '$payment', '$customer_address', '$customer_phone', '$order_date', '$delivery_date', " . ($prescription_path ? "'$prescription_path'" : "NULL") . ")";
+                
+                if (!$conn->query($insert_sql)) {
+                    $stock_errors[] = "Database error: " . $conn->error . ". Please contact support.";
+                }
             }
         }
         
@@ -59,23 +222,21 @@ if ($step === 'submit' && $_SERVER["REQUEST_METHOD"] == "POST" && !$cartIsEmpty)
         ];
         $_SESSION["cart"] = [];
         $orderPlaced = true;
-    } else {
-        // Online Payment - Redirect to payment gateway
-        $_SESSION['pending_order'] = [
-            'customer_name' => $customer_name,
-            'customer_email' => $customer_email,
-            'customer_address' => $customer_address,
-            'customer_phone' => $customer_phone,
-            'payment' => $payment,
-            'products' => $products,
-            'total' => $total,
-            'order_date' => $order_date,
-            'delivery_date' => $delivery_date,
-            'cart' => $_SESSION['cart']
-        ];
-        header('Location: payment_gateway.php');
-        exit();
     }
+    
+    $invoice = [
+        'customer_name' => $customer_name,
+        'customer_email' => $customer_email,
+        'customer_address' => $customer_address,
+        'customer_phone' => $customer_phone,
+        'payment' => $payment,
+        'products' => $products,
+        'total' => $total,
+        'order_date' => $order_date,
+        'delivery_date' => $delivery_date
+    ];
+    $_SESSION["cart"] = [];
+    $orderPlaced = true;
 }
 
 include 'header.php';
@@ -165,6 +326,55 @@ body, .auth-page {
 .auth-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.prescription-section {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-top: 0.5rem;
+}
+
+.prescription-options {
+    margin-bottom: 1rem;
+}
+
+.prescription-option {
+    background: white;
+    border-radius: 8px;
+    padding: 0.8rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+}
+
+.prescription-option:hover {
+    background: #f0f4ff;
+}
+
+.upload-new-prescription {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 1rem;
+}
+
+.btn-upload-prescription {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #e3eafc;
+    color: #667eea;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-upload-prescription:hover {
+    background: #c3dafe;
+    color: #5a6fd8;
 }
 .auth-footer {
     margin-top: 2rem;
@@ -350,18 +560,14 @@ body, .auth-page {
         </div>
         <a href="products.php" class="invoice-btn"><i class="fas fa-arrow-left"></i> Go to Products</a>
     </div>
-<?php elseif ($orderPlaced || (isset($_GET['step']) && $_GET['step'] === 'submit' && isset($_GET['payment']) && $_GET['payment'] === 'online')): ?>
-    <?php
-    // Handle online payment success
-    if (isset($_GET['payment']) && $_GET['payment'] === 'online') {
-        $orderPlaced = true;
-        // Get order data from session (this would be set by payment gateway)
-        if (isset($_SESSION['last_order'])) {
-            $invoice = $_SESSION['last_order'];
-            unset($_SESSION['last_order']);
-        }
-    }
-    ?>
+<?php elseif (!$fromCart && !$cartIsEmpty): ?>
+    <div class="invoice-container">
+        <div style="color: #ffc107; font-size: 1.2rem; font-weight: bold; margin-bottom: 1rem;">
+            <i class="fas fa-exclamation-triangle"></i> Please review your cart first before proceeding to checkout.
+        </div>
+        <a href="cart.php" class="invoice-btn"><i class="fas fa-shopping-cart"></i> Go to Cart</a>
+    </div>
+<?php elseif ($orderPlaced): ?>
     <!-- Order Success Sound -->
     <audio id="orderSuccessSound" preload="auto">
         <source src="https://www.soundjay.com/misc/sounds/fail-buzzer-02.wav" type="audio/wav">
@@ -614,7 +820,14 @@ body, .auth-page {
                 <h2>Checkout</h2>
                 <p>Enter your details and payment method to complete your order</p>
             </div>
-            <form method="post" action="checkout.php?step=submit" class="auth-form">
+            
+            <?php if (isset($error) && !empty($error)): ?>
+                <div class="alert alert-error" style="background: #fee; color: #c33; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #fcc;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <?php echo $error; ?>
+                </div>
+            <?php endif; ?>
+            <form method="post" action="checkout.php?step=submit&from_cart=true" class="auth-form">
                 <div class="form-group">
                     <label>
                         <i class="fas fa-user"></i> Name
@@ -646,6 +859,25 @@ body, .auth-page {
                     <input type="radio" name="payment" value="COD" required> Cash on Delivery<br>
                     <input type="radio" name="payment" value="Online"> Online Payment
                 </div>
+                
+                <!-- Prescription Upload Section -->
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-file-medical"></i> Prescription (Optional)
+                    </label>
+                    <div class="prescription-section">
+                        <div class="upload-new-prescription">
+                            <h4 style="margin: 0 0 0.5rem 0; color: #333;">Upload your prescription:</h4>
+                            <input type="file" name="new_prescription" accept=".jpg,.jpeg,.png,.pdf" style="margin-bottom: 0.5rem;">
+                            <small style="color: #666; font-size: 0.8rem;">Accepted formats: JPG, PNG, PDF (Max size: 5MB)</small>
+                            <p style="color: #28a745; font-size: 0.9rem; margin-top: 0.5rem;">
+                                <i class="fas fa-info-circle"></i> 
+                                <strong>Note:</strong> Only fresh prescriptions are accepted for each order. Previous prescriptions have been cleared.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
                 <button type="submit" class="auth-btn">
                     <i class="fas fa-check"></i> Place Order
                 </button>
@@ -696,7 +928,7 @@ body, .auth-page {
                     <?php endif; endforeach; ?>
                 </table>
                 <div class="invoice-total" style="margin-bottom:2rem;">Total: ₹<?php echo number_format($cart_total, 2); ?></div>
-                <a href="checkout.php?step=form" class="auth-btn" style="margin-top:1.5rem;">
+                <a href="checkout.php?step=form&from_cart=true" class="auth-btn" style="margin-top:1.5rem;">
                     <i class="fas fa-arrow-right"></i> Place Order
                 </a>
             <?php endif; ?>

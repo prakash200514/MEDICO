@@ -15,8 +15,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $price = $_POST['price'];
     $category = $_POST['category'];
     $stock = $_POST['stock'];
+    $description = isset($_POST['description']) ? $_POST['description'] : '';
     
-    // Handle image upload
+    // Handle first image upload
     $image_name = '';
     if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
         $allowed = ['jpg', 'jpeg', 'png', 'gif'];
@@ -24,186 +25,157 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
         
         if (in_array($ext, $allowed)) {
-            $image_name = time() . '_' . $filename;
+            // Sanitize filename to prevent issues
+            $safe_filename = preg_replace('/[^a-zA-Z0-9._-]/', '_', $filename);
+            $image_name = time() . '_' . $safe_filename;
+            
+            // Ensure filename is not too long
+            if (strlen($image_name) > 200) {
+                $image_name = time() . '_' . substr($safe_filename, 0, 50) . '.' . $ext;
+            }
+            
             $upload_path = 'img/' . $image_name;
             
             if (move_uploaded_file($_FILES['image']['tmp_name'], $upload_path)) {
                 // Image uploaded successfully
             } else {
-                $message = "Error uploading image!";
+                $message = "Error uploading first image!";
             }
         } else {
             $message = "Invalid image format! Only JPG, JPEG, PNG, GIF allowed.";
         }
     }
     
+
+    
     if (empty($message)) {
-        $sql = "INSERT INTO products (name, price, category, stock, image) VALUES (?, ?, ?, ?, ?)";
+        // Check if description column exists
+        $column_check = $conn->query("SHOW COLUMNS FROM products LIKE 'description'");
+        $description_exists = $column_check && $column_check->num_rows > 0;
+        
+        if ($description_exists) {
+        $sql = "INSERT INTO products (name, price, category, stock, image, description) VALUES (?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sdsss", $name, $price, $category, $stock, $image_name);
+        $stmt->bind_param("sdssss", $name, $price, $category, $stock, $image_name, $description);
+        } else {
+            $sql = "INSERT INTO products (name, price, category, stock, image) VALUES (?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("sdsss", $name, $price, $category, $stock, $image_name);
+        }
         
         if ($stmt->execute()) {
             $message = "Product added successfully!";
             // Clear form data
-            $name = $price = $category = $stock = '';
+            $name = $price = $category = $stock = $description = '';
         } else {
-            $message = "Error adding product!";
+            $message = "Error adding product: " . $stmt->error;
         }
     }
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Product - Admin</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="responsive.css">
-    <style>
-        .admin-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .admin-header {
-            background: #007bff;
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .admin-nav {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        .admin-nav a {
-            padding: 10px 20px;
-            background: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-        .admin-nav a:hover {
-            background: #0056b3;
-        }
-        .form-container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #333;
-        }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        .form-group textarea {
-            height: 100px;
-            resize: vertical;
-        }
-        .submit-btn {
-            background: #28a745;
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        .submit-btn:hover {
-            background: #218838;
-        }
-        .message {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-        }
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-    </style>
-</head>
-<body>
-    <div class="admin-container">
-        <div class="admin-header">
-            <h1>Add New Product</h1>
-            <a href="admin_dashboard.php" style="color: white; text-decoration: none;">Back to Dashboard</a>
+<?php
+$page_title = "Add Product - Admin";
+include 'header.php';
+?>
+
+<div class="admin-container">
+    <div class="admin-header card">
+        <h1><i class="fas fa-plus-circle"></i> Add New Product</h1>
+        <p>Add a new product to your medicine store inventory</p>
+    </div>
+
+    <div class="admin-nav">
+        <a href="admin_dashboard.php" class="btn btn-secondary">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
+        <a href="admin_add_product.php" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Product
+        </a>
+        <a href="admin_add_veterinary.php" class="btn btn-info">
+            <i class="fas fa-paw"></i> Add Veterinary
+        </a>
+        <a href="admin_add_injection.php" class="btn btn-warning">
+            <i class="fas fa-syringe"></i> Add Injection
+        </a>
+        <a href="admin_add_baby.php" class="btn btn-pink">
+            <i class="fas fa-baby"></i> Add Baby Product
+        </a>
+        <a href="products.php" class="btn btn-success">
+            <i class="fas fa-store"></i> View Store
+        </a>
+    </div>
+
+    <?php if (!empty($message)): ?>
+        <div class="alert <?php echo (strpos($message, 'successfully') !== false) ? 'alert-success' : 'alert-error'; ?>">
+            <i class="fas <?php echo (strpos($message, 'successfully') !== false) ? 'fa-check-circle' : 'fa-exclamation-circle'; ?>"></i>
+            <?php echo $message; ?>
         </div>
+    <?php endif; ?>
 
-        <div class="admin-nav">
-            <a href="admin_dashboard.php">Dashboard</a>
-            <a href="admin_add_product.php">Add Product</a>
-            <a href="products.php">View Store</a>
-        </div>
-
-        <?php if (!empty($message)): ?>
-            <div class="message <?php echo strpos($message, 'Error') !== false ? 'error' : 'success'; ?>">
-                <?php echo $message; ?>
-            </div>
-        <?php endif; ?>
-
-        <div class="form-container">
-            <form method="POST" enctype="multipart/form-data">
+    <div class="card animate-fade-in-up">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="grid grid-2">
                 <div class="form-group">
-                    <label for="name">Product Name *</label>
-                    <input type="text" id="name" name="name" value="<?php echo isset($name) ? htmlspecialchars($name) : ''; ?>" required>
+                    <label for="name" class="form-label">
+                        <i class="fas fa-pills"></i> Product Name
+                    </label>
+                    <input type="text" id="name" name="name" class="form-input" placeholder="Enter product name" required value="<?php echo isset($name) ? htmlspecialchars($name) : ''; ?>">
                 </div>
 
                 <div class="form-group">
-                    <label for="price">Price (₹) *</label>
-                    <input type="number" id="price" name="price" step="0.01" min="0" value="<?php echo isset($price) ? $price : ''; ?>" required>
+                    <label for="price" class="form-label">
+                        <i class="fas fa-rupee-sign"></i> Price
+                    </label>
+                    <input type="number" id="price" name="price" class="form-input" placeholder="Enter price" step="0.01" required value="<?php echo isset($price) ? htmlspecialchars($price) : ''; ?>">
                 </div>
 
                 <div class="form-group">
-                    <label for="category">Category *</label>
-                    <select id="category" name="category" required>
+                    <label for="category" class="form-label">
+                        <i class="fas fa-tags"></i> Category
+                    </label>
+                    <select id="category" name="category" class="form-select" required>
                         <option value="">Select Category</option>
                         <option value="Tablets" <?php echo (isset($category) && $category == 'Tablets') ? 'selected' : ''; ?>>Tablets</option>
                         <option value="Syrups" <?php echo (isset($category) && $category == 'Syrups') ? 'selected' : ''; ?>>Syrups</option>
                         <option value="Supplements" <?php echo (isset($category) && $category == 'Supplements') ? 'selected' : ''; ?>>Supplements</option>
                         <option value="Creams" <?php echo (isset($category) && $category == 'Creams') ? 'selected' : ''; ?>>Creams</option>
-                        <option value="Drops" <?php echo (isset($category) && $category == 'Drops') ? 'selected' : ''; ?>>Drops</option>
+                        <option value="Equipments" <?php echo (isset($category) && $category == 'Equipments') ? 'selected' : ''; ?>>Equipments</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="stock">Stock Quantity *</label>
-                    <input type="number" id="stock" name="stock" min="0" value="<?php echo isset($stock) ? $stock : ''; ?>" required>
+                    <label for="stock" class="form-label">
+                        <i class="fas fa-boxes"></i> Stock Quantity
+                    </label>
+                    <input type="number" id="stock" name="stock" class="form-input" placeholder="Enter stock quantity" required value="<?php echo isset($stock) ? htmlspecialchars($stock) : ''; ?>">
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <label for="image">Product Image *</label>
-                    <input type="file" id="image" name="image" accept="image/*" required>
-                    <small style="color: #666;">Supported formats: JPG, JPEG, PNG, GIF. Max size: 5MB</small>
-                </div>
+            <div class="form-group">
+                <label for="description" class="form-label">
+                    <i class="fas fa-align-left"></i> Description
+                </label>
+                <textarea id="description" name="description" class="form-textarea" placeholder="Enter product description (optional)"><?php echo isset($description) ? htmlspecialchars($description) : ''; ?></textarea>
+            </div>
 
-                <button type="submit" class="submit-btn">Add Product</button>
-            </form>
-        </div>
+            <div class="form-group">
+                <label for="image" class="form-label">
+                    <i class="fas fa-image"></i> Product Image
+                </label>
+                <input type="file" id="image" name="image" class="form-input" accept="image/*" required>
+                <small style="color: var(--light-text); margin-top: 0.5rem; display: block;">
+                    <i class="fas fa-info-circle"></i> Supported formats: JPG, JPEG, PNG, GIF
+                </small>
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <button type="submit" class="btn btn-success" style="padding: 1rem 2rem; font-size: 1.1rem;">
+                    <i class="fas fa-plus-circle"></i> Add Product
+                </button>
+            </div>
+        </form>
     </div>
-</body>
-</html> 
+</div>
+
+<?php include 'footer.php'; ?>

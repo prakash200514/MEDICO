@@ -4,6 +4,76 @@ $page_title = "Home - Medico";
 include 'header.php'; 
 ?>
 
+<style>
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.main-content {
+    background: transparent;
+}
+
+.container {
+    background: transparent;
+}
+
+.hero-section {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    margin: 2rem auto;
+    max-width: 1200px;
+    padding: 3rem 2rem;
+}
+
+.features-section {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    margin: 2rem auto;
+    max-width: 1200px;
+    padding: 3rem 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.categories-section {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    margin: 2rem auto;
+    max-width: 1200px;
+    padding: 3rem 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.feature-card, .category-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover, .category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+@media (max-width: 768px) {
+    .hero-section, .features-section, .categories-section {
+        margin: 1rem;
+        padding: 2rem 1rem;
+    }
+}
+</style>
+
 <div class="hero-section">
     <div class="hero-content">
         <h1>Welcome to Medico</h1>
@@ -75,6 +145,7 @@ include 'header.php';
     font-size: 3rem;
     margin-bottom: 1rem;
     font-weight: 700;
+    color :white;
 }
 
 .hero-content p {

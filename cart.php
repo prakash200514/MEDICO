@@ -43,13 +43,25 @@ include 'header.php';
 $total = 0;
 ?>
 <style>
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
 .cart-container {
     max-width: 700px;
     margin: 40px auto;
-    background: #fff;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
     border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     padding: 30px 40px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 h2 {
     text-align: center;
@@ -152,7 +164,7 @@ table.cart-table {
     </div>
     </form>
     <div class="cart-total"><strong>Total: ₹<?php echo number_format($total, 2); ?></strong></div>
-    <a href="checkout.php" class="checkout-btn">Proceed to Checkout</a>
+    <a href="checkout.php?from_cart=true" class="checkout-btn">Proceed to Checkout</a>
     <?php endif; ?>
 </div>
 <?php include 'footer.php'; ?>
