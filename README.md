@@ -50,7 +50,7 @@ http://localhost/medico
 
 Admin Login (Sample)
 Email: admin@medico.com  
-Password: 123456
+Password: admin123
 
 🎯 Future Enhancements
 💳 Payment Gateway Integration (Razorpay / Stripe)
