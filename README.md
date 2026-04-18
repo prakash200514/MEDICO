@@ -30,3 +30,20 @@ medico/
 │── includes/           # Database & config files
 │── database.sql        # Database file
 │── index.php           # Home page
+
+⚙️ Installation Guide
+Install XAMPP
+
+Clone the repository:
+
+git clone https://github.com/your-username/medico.git
+
+Move project folder to:
+
+C:\xampp\htdocs\
+Start Apache and MySQL in XAMPP
+Import database.sql into phpMyAdmin
+
+Open browser and run:
+
+http://localhost/medico
