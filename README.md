@@ -47,3 +47,7 @@ Import database.sql into phpMyAdmin
 Open browser and run:
 
 http://localhost/medico
+
+Admin Login (Sample)
+Email: admin@medico.com  
+Password: 123456
