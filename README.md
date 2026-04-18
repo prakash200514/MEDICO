@@ -51,3 +51,17 @@ http://localhost/medico
 Admin Login (Sample)
 Email: admin@medico.com  
 Password: 123456
+
+🎯 Future Enhancements
+💳 Payment Gateway Integration (Razorpay / Stripe)
+📱 Mobile Responsive Optimization
+🤖 AI-based Medicine Recommendation
+🌐 Multi-language Support
+🤝 Contributing
+
+Contributions are welcome!
+Feel free to fork this repo and submit a pull request.
+
+📄 License
+
+This project is open-source and available under the MIT License.
