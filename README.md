@@ -38,3 +38,12 @@
 - **Product Reviews & Ratings** — Star rating system with review submission
 - **PDF Generation** — Downloadable prescription/order documents
 - **Order Success Receipt** — Detailed order confirmation page
+
+### 🔐 Admin Panel
+- **Admin Login** — Secure admin authentication
+- **Dashboard** — Overview of all orders and store activity
+- **Product Management** — Add, edit, and manage products across all categories
+- **Prescription Management** — View and manage uploaded customer prescriptions
+- **Category-Specific Add Pages** — Dedicated forms for Tablets, Injections, Baby Products, and Veterinary items
+
+---
