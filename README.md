@@ -243,3 +243,16 @@ The project uses a database named `medicine_store` with the following core table
 | `http://localhost/medicine/checkout.php`      | Proceed to checkout      |
 | `http://localhost/medicine/order_history.php` | View past orders         |
 | `http://localhost/medicine/prescription_upload.php` | Upload prescription |
+### Admin Features
+
+| URL                                        | Description                  |
+|--------------------------------------------|------------------------------|
+| `http://localhost/medicine/admin_login.php`     | Admin login              |
+| `http://localhost/medicine/admin_dashboard.php` | Admin dashboard          |
+| `http://localhost/medicine/admin_add_product.php` | Add new product        |
+| `http://localhost/medicine/admin_edit_product.php` | Edit product          |
+| `http://localhost/medicine/admin_prescriptions.php` | Manage prescriptions |
+
+> **Default Admin Credentials:** Set up manually in the database. There is no default seeded admin user.
+
+---
