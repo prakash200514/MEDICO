@@ -183,3 +183,19 @@ The project uses a database named `medicine_store` with the following core table
 - A modern web browser
 
 ---
+### Installation
+
+1. **Clone or download** this repository into your XAMPP `htdocs` folder:
+   ```
+   C:\xampp\htdocs\medicine\
+   ```
+
+2. **Start XAMPP services:**
+   - Open the XAMPP Control Panel
+   - Start **Apache** and **MySQL**
+
+3. **Open your browser** and navigate to:
+   ```
+   http://localhost/medicine/
+   ```
+
