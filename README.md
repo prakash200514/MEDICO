@@ -1,6 +1,6 @@
-💊 Medico – Online Medicine Store
+# 💊 Medico — Online Medicine & Pharmacy Store
 
-Medico is a full-featured online medicine e-commerce website designed to provide a seamless experience for purchasing medicines and healthcare products online.
+> A full-featured PHP/MySQL-based online pharmacy platform with product browsing, prescription uploads, cart management, order processing, and an admin dashboard.
 
 🚀 Features
 🔐 User Authentication (Login / Signup)
