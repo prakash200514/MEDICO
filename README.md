@@ -218,3 +218,13 @@ The project uses a database named `medicine_store` with the following core table
    add_prescription_to_orders.sql
    fix_orders_table.sql
    ```
+| Parameter   | Default Value    | Description            |
+|-------------|------------------|------------------------|
+| Host        | `localhost`      | MySQL server host      |
+| Username    | `root`           | MySQL username         |
+| Password    | `password`       | MySQL password         |
+| Database    | `medicine_store` | Database name          |
+
+> **Note:** XAMPP's default MySQL password is empty `""`. Update accordingly.
+
+---
