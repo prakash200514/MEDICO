@@ -22,11 +22,9 @@
 - [License](#license)
 
 
-🛠️ Technologies Used
-Frontend: HTML, CSS, JavaScript
-Backend: PHP
-Database: MySQL
-Server: XAMPP / Localhost
+## 📖 About the Project
+
+**Medico** is a PHP-based online pharmacy and medicine e-commerce platform. It allows customers to browse medicines across multiple categories, upload prescriptions, manage a shopping cart, and complete purchases. Administrators can manage products, view orders, and handle prescriptions through a dedicated dashboard.
 
 📁 Project Structure
 medico/
