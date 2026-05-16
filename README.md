@@ -128,3 +128,48 @@ medicine/
 ├── uploads/                    # User-uploaded prescriptions
 └── sounds/                     # Audio assets
 ```
+
+## 🗄️ Database Schema
+
+The project uses a database named `medicine_store` with the following core tables:
+
+### `users`
+| Column   | Type          | Description           |
+|----------|---------------|-----------------------|
+| id       | INT (PK, AI)  | Unique user ID        |
+| name     | VARCHAR(50)   | User's full name      |
+| email    | VARCHAR(100)  | User email address    |
+| password | VARCHAR(100)  | Hashed password       |
+
+### `products`
+| Column   | Type           | Description           |
+|----------|----------------|-----------------------|
+| id       | INT (PK, AI)   | Unique product ID     |
+| name     | VARCHAR(100)   | Product name          |
+| price    | DECIMAL(10,2)  | Product price (₹)     |
+| category | VARCHAR(50)    | Product category      |
+| stock    | INT            | Available stock       |
+| image    | VARCHAR(100)   | Image file path       |
+
+### `prescriptions`
+| Column      | Type          | Description                  |
+|-------------|---------------|------------------------------|
+| id          | INT (PK, AI)  | Prescription ID              |
+| user_email  | VARCHAR(100)  | Uploading user's email       |
+| file_path   | VARCHAR(255)  | Path to uploaded file        |
+| uploaded_at | TIMESTAMP     | Upload timestamp             |
+
+### `orders`
+| Column         | Type           | Description               |
+|----------------|----------------|---------------------------|
+| id             | INT (PK, AI)   | Order ID                  |
+| user_email     | VARCHAR(100)   | Ordering user's email     |
+| product_id     | INT            | Ordered product ID        |
+| quantity       | INT            | Quantity ordered          |
+| total_price    | DECIMAL(10,2)  | Total order price (₹)     |
+| payment_method | VARCHAR(50)    | e.g., COD, UPI, Card      |
+| order_time     | TIMESTAMP      | Order placement timestamp |
+
+> Additional tables for `reviews` are created via `create_reviews_table.sql`.
+
+---
