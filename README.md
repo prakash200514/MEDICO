@@ -26,3 +26,15 @@
 
 **Medico** is a PHP-based online pharmacy and medicine e-commerce platform. It allows customers to browse medicines across multiple categories, upload prescriptions, manage a shopping cart, and complete purchases. Administrators can manage products, view orders, and handle prescriptions through a dedicated dashboard.
 
+## ✨ Features
+
+### 🛍️ Customer-Facing
+- **User Registration & Login** — Secure account creation and session management
+- **Product Browsing** — Browse medicines by category with search functionality
+- **Shopping Cart** — Add/remove items, view totals with AJAX support
+- **Prescription Upload** — Upload and manage medical prescriptions
+- **Checkout & Payment** — Complete order flow with payment gateway integration
+- **Order History** — View past orders and order details
+- **Product Reviews & Ratings** — Star rating system with review submission
+- **PDF Generation** — Downloadable prescription/order documents
+- **Order Success Receipt** — Detailed order confirmation page
