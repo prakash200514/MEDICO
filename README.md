@@ -228,3 +228,18 @@ The project uses a database named `medicine_store` with the following core table
 > **Note:** XAMPP's default MySQL password is empty `""`. Update accordingly.
 
 ---
+## 🧭 Usage
+
+### Customer Features
+
+| URL                          | Description                        |
+|------------------------------|------------------------------------|
+| `http://localhost/medicine/`                  | Homepage                 |
+| `http://localhost/medicine/login.php`         | Login page               |
+| `http://localhost/medicine/signup.php`        | Registration page        |
+| `http://localhost/medicine/products.php`      | Browse all products      |
+| `http://localhost/medicine/search.php`        | Search products          |
+| `http://localhost/medicine/cart.php`          | View shopping cart       |
+| `http://localhost/medicine/checkout.php`      | Proceed to checkout      |
+| `http://localhost/medicine/order_history.php` | View past orders         |
+| `http://localhost/medicine/prescription_upload.php` | Upload prescription |
