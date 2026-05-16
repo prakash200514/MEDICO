@@ -47,3 +47,14 @@
 - **Category-Specific Add Pages** — Dedicated forms for Tablets, Injections, Baby Products, and Veterinary items
 
 ---
+## 🛠️ Tech Stack
+
+| Layer        | Technology            |
+|--------------|-----------------------|
+| Backend      | PHP 7.4+              |
+| Database     | MySQL / MariaDB       |
+| Frontend     | HTML5, CSS3, JavaScript |
+| Styling      | Custom CSS, Responsive CSS |
+| Icons        | Font Awesome          |
+| Server       | Apache (XAMPP)        |
+| PDF          | PHP (generate_pdf.php) |
