@@ -173,3 +173,13 @@ The project uses a database named `medicine_store` with the following core table
 > Additional tables for `reviews` are created via `create_reviews_table.sql`.
 
 ---
+## 🚀 Getting Started
+
+### Prerequisites
+
+- [XAMPP](https://www.apachefriends.org/) (Apache + MySQL + PHP)
+- PHP 7.4 or higher
+- MySQL 5.7 / MariaDB 10.3 or higher
+- A modern web browser
+
+---
