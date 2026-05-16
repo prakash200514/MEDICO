@@ -58,3 +58,73 @@
 | Icons        | Font Awesome          |
 | Server       | Apache (XAMPP)        |
 | PDF          | PHP (generate_pdf.php) |
+
+## 🛠️ Tech Stack
+
+| Layer        | Technology            |
+|--------------|-----------------------|
+| Backend      | PHP 7.4+              |
+| Database     | MySQL / MariaDB       |
+| Frontend     | HTML5, CSS3, JavaScript |
+| Styling      | Custom CSS, Responsive CSS |
+| Icons        | Font Awesome          |
+| Server       | Apache (XAMPP)        |
+| PDF          | PHP (generate_pdf.php) |
+
+---
+
+## 📁 Project Structure
+
+```
+medicine/
+├── index.php                   # Homepage / Landing page
+├── login.php                   # User login
+├── signup.php                  # User registration
+├── logout.php                  # User logout
+│
+├── products.php                # All products listing
+├── search.php                  # Product search
+├── cart.php                    # Shopping cart
+├── checkout.php                # Checkout & payment flow
+├── payment_gateway.php         # Payment processing
+├── order_success.php           # Order confirmation page
+├── order_history.php           # Customer order history
+│
+├── prescription_upload.php     # Upload prescriptions
+├── download_prescription.php   # Download prescription files
+│
+├── submit_review.php           # Submit product review
+├── submit_review_ajax.php      # AJAX review submission
+├── get_reviews.php             # Fetch product reviews
+│
+├── baby_products.php           # Baby products category
+├── injections.php              # Injections category
+├── veterinary.php              # Veterinary products category
+│
+├── header.php                  # Shared site header/nav
+├── footer.php                  # Shared site footer
+│
+├── db.php                      # Database connection
+├── database.sql                # Core database schema
+│
+├── admin_login.php             # Admin login page
+├── admin_logout.php            # Admin logout
+├── admin_dashboard.php         # Admin dashboard
+├── admin_add_product.php       # Add general product
+├── admin_add_baby.php          # Add baby product
+├── admin_add_injection.php     # Add injection product
+├── admin_add_veterinary.php    # Add veterinary product
+├── admin_edit_product.php      # Edit existing product
+├── admin_prescriptions.php     # Manage prescriptions
+│
+├── generate_pdf.php            # PDF generation
+├── add_to_cart_ajax.php        # AJAX cart operations
+│
+├── style.css                   # Main stylesheet
+├── responsive.css              # Responsive / mobile styles
+│
+├── css/                        # Additional CSS files
+├── img/                        # Product and site images
+├── uploads/                    # User-uploaded prescriptions
+└── sounds/                     # Audio assets
+```
