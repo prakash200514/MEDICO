@@ -199,3 +199,22 @@ The project uses a database named `medicine_store` with the following core table
    http://localhost/medicine/
    ```
 
+### Database Setup
+
+1. Open **phpMyAdmin**: [http://localhost/phpmyadmin](http://localhost/phpmyadmin)
+
+2. Click **Import** and upload `database.sql` — this creates the `medicine_store` database and core tables with sample product data.
+
+3. *(Optional)* To enable the review system, also run:
+   ```
+   create_reviews_table.sql
+   ```
+
+4. *(Optional)* For additional columns (subcategory, descriptions, invoice numbers), run these in order:
+   ```
+   add_subcategory_column.sql
+   add_product_description.sql
+   add_invoice_number.sql
+   add_prescription_to_orders.sql
+   fix_orders_table.sql
+   ```
