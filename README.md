@@ -1,18 +1,26 @@
 # 💊 Medico — Online Medicine & Pharmacy Store
 
 > A full-featured PHP/MySQL-based online pharmacy platform with product browsing, prescription uploads, cart management, order processing, and an admin dashboard.
+## 📋 Table of Contents
 
-🚀 Features
-🔐 User Authentication (Login / Signup)
-🛒 Add to Cart & Remove Items
-💳 Checkout System (COD / Online Payment)
-📦 Order Placement & Confirmation
-📜 Order History for Users
-🔍 Search & Filter Medicines
-📤 Prescription Upload Option
-🧑‍💼 Admin Panel for Product Management
-➕ Add / Update / Delete Products
-📊 Stock & Price Management
+- [About the Project](#about-the-project)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Database Schema](#database-schema)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Database Setup](#database-setup)
+  - [Configuration](#configuration)
+- [Usage](#usage)
+  - [Customer Features](#customer-features)
+  - [Admin Features](#admin-features)
+- [Product Categories](#product-categories)
+- [File Reference](#file-reference)
+- [Contributing](#contributing)
+- [License](#license)
+
 
 🛠️ Technologies Used
 Frontend: HTML, CSS, JavaScript
